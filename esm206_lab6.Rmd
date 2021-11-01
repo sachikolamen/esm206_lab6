@@ -64,3 +64,57 @@ There is no significant difference in ranks (often you'll see medians) between g
 Median scores for group 1 (M = 14) and group 2 (M = 12) did not differ significantly. (Mann Whitney U test: U(df) = 86, p=0.28). 
 
 ** When you decide which test to use to determine central tendency and significance level, make sure to have test and visualization information be consistent throughout analysis and the way you present it. ** 
+
+If you have more than 2 groups to compare, you can use the `kruskal.test()`
+
+##d Linear regression
+
+Simple linear regression (single dependent variable, a single independent variable)
+```{r, include = FALSE}
+# Make exploratory plot of penguin body mass v. flipper length (flipper length on x axis))
+
+ggplot(data = penguins, aes(x = flipper_length_mm, y = body_mass_g)) +
+  geom_point() +
+  geom_smooth(method = "lm")
+
+```
+
+Find a linear regression model using ordinary least squares describing the relationsihp between flipper length and body mass for these penguins. 
+
+3 pieces: 
+- What type of model?
+- What is the relationship to model (DV ~ IV(s))?
+Where is the data that is used to create this model?
+
+```{r}
+penguin_lm <- lm(body_mass_g ~ flipper_length_mm, data = penguins) # how does body mass change as a function of flipper length
+
+# body_mass_g = 49.7(flipper_length_mm) - 5780.8 g <<< for every 1 mm increase in flipper length I expect a 49.7 g increase in body mass.
+```
+
+### Broom package returns model outputs as tidy data frames
+
+```{r}
+penguin_lm_tidy <- broom::tidy(penguin_lm)
+
+penguin_lm_tidy
+
+broom::glance(penguin_lm) # gives you model wide indicators of uncertainty in the dataframe
+```
+How Can I actually include my model equation in a report?
+
+```{r}
+extract_eq(model = penguin_lm, use_coefs = TRUE) # this stores a lawtec version of the outcomes from the model -- this looks weird in R, but comes out as an equation in your knitted document. Convert model outputs into a lawtec format.
+```
+
+```{r}
+plot() # produces diagnostic plots to help you determine whether or not it is a good diagnostic model. 
+
+# 4 plots
+# 1) residual values v fitted values -- residuals are how far the points are from the fitted line. Are they somewhat evenly dispersed around the fitted line?
+# 3) is just a scaled version -- both ask about heterosedasticity (the variance of the residuals is NOT constant over the course of the model) - does it look like the residuals have an even spread across the model. These models look homosedastic. 
+# 2) Quantile Quantile (QQplot) One of the assumptions of a linear regression is that the residual values are normally distributed.
+# Shows measure of `weight` or `leverage` -- what points seem to be most impacting the model outputs, are there any points that seem like they are having a disproportionate weight on the other points in a way that could be concerning. If there is a point beyond `Cooks Distane` those are points that have a disproportionate pull
+```
+
+
