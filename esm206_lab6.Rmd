@@ -7,5 +7,60 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(palmerpenguins)
+library(broom)
+library(equatiomatic)
 ```
 
+## Example of a rank-based test
+
+When doing parametric tests you are making assumptions about normality and variances and independednt variables. when those dont hold we should have other tests that we feel we can compare them at. Ranked based tests give us a tool to do that. Comparing ranks across groups rather than actual values. 
+
+We'll make our own samples using a pseudorandom generator. 
+
+```{r}
+# `set.seed()` is a generator that allows you to set a `seed` or starting point from which the random sequence begins being generated from. It will be the same for everyone who uses the same set.seed starting value
+
+set.seed(1414)
+gp_1 <- sample.int(20, size = 15, replace = TRUE) # When you ask R to create a set of random values, `set.seed()` tells R to start at value number 1414 and choose the next 20 values following.
+
+set.seed(1424)
+gp_2 <- sample.int(30, size = 15, replace = TRUE)
+
+```
+
+```{r}
+# R has built in functions to do basic plots
+hist(gp_1)
+
+hist(gp_2)
+
+# These histograms are not convincing, the sample size is pretty small also so the means might not be normally distributed. 
+```
+
+Try a t-test:
+```{r}
+t.test(gp_1, gp_2)
+```
+What is the meaning o fthe p-value?
+
+The p-value indicates that if the two populations had the same mean value then, there is a 19.8% chance that picking a random sample mean from each population would be *at least as different* as the sample means what we found by random chance (taking into account spread, n).
+
+Retain(fail to reject) the null hypothesis. >> There is no significant difference in means between group 1 and group 2
+
+Warning: People get weirdly upset if you say "accept" the null.
+
+Now lets compare this outcome to a rank-based test. -- data is independent of eachother
+
+## Mann Whitney U unpaired rank-based test
+```{r}
+mwu <- wilcox.test(gp_1, gp_2) # if we have matching values in ranks, you have a tie adn there is an approximation in the result
+```
+If these samples were drawn  from populations with the same ranks (medians), then the probability of finding two samples with ranks *at least as different* as those in our samples is 28%. 
+
+There is no significant difference in ranks (often you'll see medians) between group 1 and group 2 (statistical summary).
+
+Median scores for group 1 (M = 14) and group 2 (M = 12) did not differ significantly. (Mann Whitney U test: U(df) = 86, p=0.28). 
+
+** When you decide which test to use to determine central tendency and significance level, make sure to have test and visualization information be consistent throughout analysis and the way you present it. ** 
