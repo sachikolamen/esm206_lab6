@@ -15,12 +15,12 @@ library(equatiomatic)
 
 ## Example of a rank-based test
 
-When doing parametric tests you are making assumptions about normality and variances and independednt variables. when those dont hold we should have other tests that we feel we can compare them at. Ranked based tests give us a tool to do that. Comparing ranks across groups rather than actual values. 
+When doing parametric tests you are making assumptions about normality and variances and independednt variables. When those don't hold we should have other tests that we feel we can compare them at. Ranked based tests give us a tool to do that. Comparing ranks (medians) across groups rather than actual values. 
 
 We'll make our own samples using a pseudorandom generator. 
 
 ```{r}
-# `set.seed()` is a generator that allows you to set a `seed` or starting point from which the random sequence begins being generated from. It will be the same for everyone who uses the same set.seed starting value
+# `set.seed()` is a generator that allows you to create pseudorandom but reproducible samples. --Set a `seed` or starting point from which the random sequence begins being generated from. It will be the same for everyone who uses the same set.seed starting value
 
 set.seed(1414)
 gp_1 <- sample.int(20, size = 15, replace = TRUE) # When you ask R to create a set of random values, `set.seed()` tells R to start at value number 1414 and choose the next 20 values following.
@@ -39,13 +39,13 @@ hist(gp_2)
 # These histograms are not convincing, the sample size is pretty small also so the means might not be normally distributed. 
 ```
 
-Try a t-test:
+Try a t-test so we can compare the results:
 ```{r}
 t.test(gp_1, gp_2)
 ```
-What is the meaning o fthe p-value?
+What is the meaning of the p-value?
 
-The p-value indicates that if the two populations had the same mean value then, there is a 19.8% chance that picking a random sample mean from each population would be *at least as different* as the sample means what we found by random chance (taking into account spread, n).
+The p-value indicates that if the two populations had the same mean value then, there is a `r round(ttest$p.value, 2)` probability that picking a random sample mean from each population would be *at least as different* as the sample means what we found by random chance (taking into account spread, n).
 
 Retain(fail to reject) the null hypothesis. >> There is no significant difference in means between group 1 and group 2
 
@@ -53,13 +53,20 @@ Warning: People get weirdly upset if you say "accept" the null.
 
 Now lets compare this outcome to a rank-based test. -- data is independent of eachother
 
+[a more compreshensive explanaiton of difference between groups... actually means, data spread, effect size] ... there is no significant difference (t(df) = t-statistic value, p-value)]
+
 ## Mann Whitney U unpaired rank-based test
+Mann-Whitney U (non-parametric alternative to an unpaired 2-sample t-test) -- pool values from a sample and rank them in order from lowest to highest then compare to another sample
+
+H0: equal ranks (or medians)
+HA: Ranks are not equal (or, medians are not equal)
+
 ```{r}
 mwu <- wilcox.test(gp_1, gp_2) # if we have matching values in ranks, you have a tie adn there is an approximation in the result
 ```
-If these samples were drawn  from populations with the same ranks (medians), then the probability of finding two samples with ranks *at least as different* as those in our samples is 28%. 
+If these samples were drawn from populations with the same ranks (medians), then the probability of finding two samples with ranks *at least as different* as those in our samples is 28%. 
 
-There is no significant difference in ranks (often you'll see medians) between group 1 and group 2 (statistical summary).
+There is no significant difference in ranks (often you'll see medians) between group 1 and group 2 (Mann-Whitney U; ).
 
 Median scores for group 1 (M = 14) and group 2 (M = 12) did not differ significantly. (Mann Whitney U test: U(df) = 86, p=0.28). 
 
@@ -67,15 +74,17 @@ Median scores for group 1 (M = 14) and group 2 (M = 12) did not differ significa
 
 If you have more than 2 groups to compare, you can use the `kruskal.test()`
 
-##d Linear regression
+## Simple Linear regression
+
+Two *continuous quantitative* variables that you are trying to understand the relationship between, and you think that a linear relationship makes sense.
 
 Simple linear regression (single dependent variable, a single independent variable)
-```{r, include = FALSE}
+```{r}
 # Make exploratory plot of penguin body mass v. flipper length (flipper length on x axis))
 
 ggplot(data = penguins, aes(x = flipper_length_mm, y = body_mass_g)) +
   geom_point() +
-  geom_smooth(method = "lm")
+  geom_smooth(method = "lm") # use to add ordinary least squares trend line 
 
 ```
 
@@ -86,10 +95,13 @@ Find a linear regression model using ordinary least squares describing the relat
 - What is the relationship to model (DV ~ IV(s))?
 Where is the data that is used to create this model?
 
-```{r}
-penguin_lm <- lm(body_mass_g ~ flipper_length_mm, data = penguins) # how does body mass change as a function of flipper length
+## Find the model estimates (coefficients)
+ Use the `lm()` function for the linear model to estimate ordinary least squares
 
-# body_mass_g = 49.7(flipper_length_mm) - 5780.8 g <<< for every 1 mm increase in flipper length I expect a 49.7 g increase in body mass.
+```{r}
+penguin_lm <- lm(body_mass_g ~ flipper_length_mm, data = penguins) # body _mass_g as a function of flipper_length_mm  -- how does body mass change as a function of flipper length
+
+# body_mass_g = 49.7(flipper_length_mm) - 5780.8 g <<< for every 1 mm increase in flipper length I expect a 49.7 g increase in body mass (49.7g/mm)
 ```
 
 ### Broom package returns model outputs as tidy data frames
